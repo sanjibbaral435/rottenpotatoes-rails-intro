@@ -12,24 +12,38 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
-    @order = params[:sort]
-    @movies = @movies.order(@order)
     @order_by = params[:sort] # get the sort key
     
     @all_ratings = Movie.uniq.pluck(:rating) # extract the ratings
+    
     @ratings = params[:ratings]
     if @ratings == nil
+      if session[:ratings] != nil
+        params[:ratings] = session[:ratings]
+        return redirect_to params: params
+      end
       @ratings = {}
       @all_ratings.each {|key| @ratings[key] = "1"}
+    else 
+      session[:ratings] = @ratings
     end
-    
+
     if @ratings.length > 0
       @movies = @movies.where(:rating => @ratings.keys)
     end
-    
+   
+    if @order_by == nil
+      if session[:sort] != nil
+        params[:sort] = session[:sort]
+        return redirect_to params: params
+      end
+    else
+      session[:sort] = @order_by
+    end
+
     @movies = @movies.order(@order_by)
   end
-  
+
   def new
     # default: render 'new' template
   end
