@@ -11,13 +11,25 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @order = params[:sort]
     @movies = Movie.all
-    if @order != nil
-      @movies = @movies.order(@order)
+    @order = params[:sort]
+    @movies = @movies.order(@order)
+    @order_by = params[:sort] # get the sort key
+    
+    @all_ratings = Movie.uniq.pluck(:rating) # extract the ratings
+    @ratings = params[:ratings]
+    if @ratings == nil
+      @ratings = {}
+      @all_ratings.each {|key| @ratings[key] = "1"}
     end
+    
+    if @ratings.length > 0
+      @movies = @movies.where(:rating => @ratings.keys)
+    end
+    
+    @movies = @movies.order(@order_by)
   end
-
+  
   def new
     # default: render 'new' template
   end
